@@ -11,7 +11,7 @@ let adsManager: any;
 
 export class PrebidNegotiator {
   adunit: any;
-    constructor(private videoObj: any, private width: number, private height: number) {
+    constructor(private videoObj: any, private width: number, private height: number, private fnImpression: Function, private fnLoaded: Function, private fnCancel: Function) {
         this.launchPrebid();
     }
 
@@ -71,18 +71,20 @@ export class PrebidNegotiator {
           that.invokeVideoPlayer(bids['video1'].bids[0].vastUrl);				
         });
       } else {
-        const xml = new XMLHttpRequest();
+        that.fnCancel();
+        /*const xml = new XMLHttpRequest();
         prebid.que.push(function() {
           that.invokeVideoPlayer("https://ads.eu.criteo.com/delivery/r/0.1/vast.php?did=5d95ddc7100283f98330f0e715be7b00&u=%7CIbTI2OtAf3s3jFmTrdVonLSScAIOHy7Nlc%2BdCH9RtgQ%3D%7C&c1=Dcz_gsP0hEtcAD4RA4hUNQ6lz0KWLrnEGOnQ6243XIp2ROSijxgLedDFii6s6O02AlMWZl0khqGZ1rnftcK6WH9sprGChZDWQ6qiD17DClWr4ZRc-TjjzO1G-mgqlMa3rxKfqYfA-6Hnp-Ipwrcy3Ytyip0mu9kjYU4A-vy6h7vYNpVaHbp3wnaw-YNxjGqv9HSwLDFtoMSiFvy76plCZdYirhEZFR1xtQnyCopODHSk4rNKDtrmSHjdrSTlMXIaxCGzVC1yU-KoFTbCTYHCC-FoPBag37FiJE4TlHGiDDPXcFN83mYokHj8ve0Jl81C5fWAWjfYVaoZo3zyYfN75ZwfV73VvhghKmn3eDILjf36oIEckQfjkVLkOr8m_HNVNBnrME4m8_M69-x_EKwvl6ooQost0eLdrs1q1ouFpXEJ02LcjGgAd7VZ4P0bIQVW");
         });
         //xml.open('GET', 'https://vadserver.com/node/obtain?xmlUrl=' + encodeURIComponent("https://ads.eu.criteo.com/delivery/r/0.1/vast.php?did=5d94b86026507c9f1fdee0d40e501400&u=%7Cq9F2klJBjzgLBicfg5ioj1B1y8HglvsCIe5Qua8me1E%3D%7C&c1=jWCgqsKSUoXGWHqz_aWNEyGUtd3ffQVP2eqi0j-AdlG3VzEQ-uMqrA41bN_5HcFTvbox4Cem3nnspzvjfXsmz1rvFfty9Q5rVh4m9k03k1-HzhlUxXAw7CaOPMpz-zMJhmXNMcCjbXB3cR_oO3VaMaSdZaP353qB2r0fAv06O8NI3drudnRoKins2x6GhsAe-xXol8HrKoD4t0RD6J4zdCaZnZkppvErjKtqM4o9ccaNPz-BGWxPHcwytSJWl_N15NjTSSvYwX7L2C6Fahs6Pso7V2sg1qH_TFN7ab3mVNUK1s09SACJ5dsnOjZEAAyosTvXG33Vr3obe-3kSjV1AW6pW4GhALa9f8Dit0GRFEnMXLcuulX_sOYE_x_BoA707YOankLiOj68Bad2-FT01zUjahq4heOXM412VBA0keRkbJytTod7c17IW4moZ26uXgP7znZ2PoI"), false);
         //xml.send();
-        return;
+        return;*/
       }
     }
 
     invokeVideoPlayer(url:string) {
       const that = this;
+      that.fnLoaded();
      /* const videoJSLink = document.createElement('link');
       videoJSLink.rel = "stylesheet";
       videoJSLink.href = "https://cdnjs.cloudflare.com/ajax/libs/video.js/6.4.0/video-js.css";
@@ -107,7 +109,9 @@ export class PrebidNegotiator {
            },
           xtraTags: [],
           appearAt: 'left',
-          objVideo: that.videoObj
+          objVideo: that.videoObj,
+          fnImpression: function () {that.fnImpression();},
+          fnLoaded: that.fnLoaded
         }, '', '123123123', 5000);
           //if ((window as any).videojs) {
             /*const hasSource = that.videoObj.querySelector('source');
