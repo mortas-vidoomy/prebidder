@@ -8,8 +8,8 @@ const rootClass = "vidoomy-ad-wrapper-" + Math.floor(Math.random() * 1000000);
 
 module.exports = {  
   output: {
-    path: path.resolve(__dirname, "../dist"),
-    filename: "[name].js",
+    path: path.resolve(__dirname, "dist"),
+    filename: "[name]-criteo-vast.js",
     library: "vidoomy"
   },
   resolve: {
@@ -24,7 +24,7 @@ module.exports = {
           loader: "babel-loader"
         }
       },
-      /*{
+      {
         test: /.js$/,
         include: new RegExp(`\\${path.sep}prebid\.js`),
         use: {
@@ -33,7 +33,7 @@ module.exports = {
           // this can be accomplished by requiring prebid's .babelrc.js file (requires Babel 7 and Node v8.9.0+)
           options: require("prebid.js/.babelrc.js")
         }
-      },*/
+      },
       {
         test: /\.html$/,
         use: [
