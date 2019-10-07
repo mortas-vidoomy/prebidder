@@ -7,7 +7,7 @@ const { DefinePlugin } = require("webpack");
 const rootClass = "vidoomy-ad-wrapper-" + Math.floor(Math.random() * 1000000);
 const CopyPlugin = require('copy-webpack-plugin');
 
-const url = 'https://vastserverad.com/criteo/';
+const url = 'https://www.vidoomy.com/tests/vastplayer/';
 
 module.exports = {
   entry: {
@@ -105,12 +105,12 @@ module.exports = {
       template: "./src/index.html",
       filename: "./index.html"
     }),
-     new CopyPlugin([
-      { from: path.resolve(__dirname, "src", "vido.js"), to: "", transform: function (content, path) {
-        return content.toString().replace(/__ROOT_URL__/gi, JSON.stringify(url));
+    new CopyPlugin([
+     { from: path.resolve(__dirname, "src", "vido.js"), to: "", transform: function (content, path) {
+       return content.toString().replace(/__ROOT_URL__/gi, JSON.stringify(url));
 
-      } }
-    ]),
+     } }
+   ]),
     new DefinePlugin({
       __ROOT_URL__: JSON.stringify(url)
     })

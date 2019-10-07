@@ -9,6 +9,7 @@ prebid.requestBids({
 let intervalTimer: any;
 let adsManager: any;
 
+declare var __ROOT_URL__: string;
 
 export class PrebidNegotiator {
   adunit: any;
@@ -21,7 +22,8 @@ export class PrebidNegotiator {
       private randomKey: string,
       private fnImpression: Function,
       private fnLoaded: Function,
-      private fnCancel: Function) {
+      private fnCancel: Function,
+      private fnClick: Function) {
         this.launchPrebid();
     }
 
@@ -124,7 +126,7 @@ export class PrebidNegotiator {
 */
 
       const videoJsScript = document.createElement('script');
-      videoJsScript.src = 'https://vastserverad.com/criteo/main.js';
+      videoJsScript.src = __ROOT_URL__ + 'main.js';
       videoJsScript.type = 'text/javascript';
       videoJsScript.onload = function () {
         new (window as any).vidoomy.VidoomyPlayer({
@@ -139,6 +141,7 @@ export class PrebidNegotiator {
           objVideo: that.videoObj,
           fnImpression: function () {that.fnImpression();},
           fnLoaded: that.fnLoaded,
+          fnClick: function () {that.fnClick();},
           randomKey: that.randomKey
         }, '', '', 5000);
           //if ((window as any).videojs) {
