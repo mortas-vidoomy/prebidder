@@ -2,6 +2,7 @@ import prebid from 'prebid.js';
 //import 'prebid.js/modules/lkqdBidAdapter'; // imported modules will register themselves automatically with prebid
 import 'prebid.js/modules/criteoBidAdapter';
 import 'prebid.js/modules/dfpAdServerVideo';
+import 'prebid.js/modules/consentManagement';
 prebid.processQueue();  // required to process existing pbjs.queue blocks and setup any further pbjs.queue execution
 prebid.requestBids({
 })
@@ -11,7 +12,16 @@ let adsManager: any;
 
 export class PrebidNegotiator {
   adunit: any;
-    constructor(private videoObj: any, private width: number, private height: number, private fnImpression: Function, private fnLoaded: Function, private fnCancel: Function) {
+    constructor(
+      private videoObj: any,
+      private width: number,
+      private height: number,
+      private gdprConsentData: string,
+      private gdprVendorConsents: string,
+      private randomKey: string,
+      private fnImpression: Function,
+      private fnLoaded: Function,
+      private fnCancel: Function) {
         this.launchPrebid();
     }
 
@@ -40,14 +50,28 @@ export class PrebidNegotiator {
                 placement: 1,
               }
             }
-          }]}
+          }],
+          consentManagement: {
+            cmpApi: 'static',
+            allowAuctionWithoutConsent: true,
+            consentData: {
+              getConsentData: {
+                'gdprApplies': true,
+                'hasGlobalScope': false,
+                'consentData': this.gdprConsentData
+              },
+              getVendorConsents: {
+                'metadata': this.gdprVendorConsents,
+              }
+            }
+          }},
           ];
 
           prebid.que.push(function() {
             prebid.addAdUnits(that.adunit);
             prebid.setConfig({
               usePrebidCache: true,
-              debug: true,
+              //debug: true,
               cache: {
                 url: "https://prebid.adnxs.com/pbc/v1/cache"
               }
@@ -63,9 +87,12 @@ export class PrebidNegotiator {
       const that = this;
       if (prebid.adserverRequestSent) return;
       if (bids && bids['video1'] && bids['video1'].bids && bids['video1'].bids[0] && bids['video1'].bids[0].vastUrl) {
-       /* const xml = new XMLHttpRequest();
-        xml.open('GET', 'https://vadserver.com/node/obtain?xmlUrl=' + encodeURIComponent(bids['video1'].bids[0].vastUrl), false);
-        xml.send();*/
+        const xml = new XMLHttpRequest();
+        xml.open('POST', 'https://test.vidoomy.com/log/bid/');
+        xml.setRequestHeader("Content-Type", "application/json");
+        xml.send(JSON.stringify({bids: bids['video1'], key: that.randomKey}));
+
+
         prebid.adserverRequestSent = true;
         prebid.que.push(function() {
           that.invokeVideoPlayer(bids['video1'].bids[0].vastUrl);				
@@ -97,7 +124,7 @@ export class PrebidNegotiator {
 */
 
       const videoJsScript = document.createElement('script');
-      videoJsScript.src = 'https://vidoomy.com/tests/vastplayer/main.js';
+      videoJsScript.src = 'https://vastserverad.com/criteo/main.js';
       videoJsScript.type = 'text/javascript';
       videoJsScript.onload = function () {
         new (window as any).vidoomy.VidoomyPlayer({
@@ -111,8 +138,9 @@ export class PrebidNegotiator {
           appearAt: 'left',
           objVideo: that.videoObj,
           fnImpression: function () {that.fnImpression();},
-          fnLoaded: that.fnLoaded
-        }, '', '123123123', 5000);
+          fnLoaded: that.fnLoaded,
+          randomKey: that.randomKey
+        }, '', '', 5000);
           //if ((window as any).videojs) {
             /*const hasSource = that.videoObj.querySelector('source');
             if (!hasSource) {
