@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --disableHostCheck true --port 80 --host 0.0.0.0",
     "dev": "webpack --mode production --config webpack.config.dev.js",
     "build": "webpack --mode production",
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -1,7 +1,7 @@
 import prebid from 'prebid.js';
 //import 'prebid.js/modules/lkqdBidAdapter'; // imported modules will register themselves automatically with prebid
 import 'prebid.js/modules/criteoBidAdapter';
-import 'prebid.js/modules/dfpAdServerVideo';
+//import 'prebid.js/modules/dfpAdServerVideo';
 import 'prebid.js/modules/consentManagement';
 prebid.processQueue();  // required to process existing pbjs.queue blocks and setup any further pbjs.queue execution
 prebid.requestBids({
@@ -9,10 +9,14 @@ prebid.requestBids({
 let intervalTimer: any;
 let adsManager: any;
 
+
 declare var __ROOT_URL__: string;
 
 export class PrebidNegotiator {
   adunit: any;
+
+  randomString = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
     constructor(
       private videoObj: any,
       private width: number,
@@ -23,8 +27,13 @@ export class PrebidNegotiator {
       private fnImpression: Function,
       private fnLoaded: Function,
       private fnCancel: Function,
-      private fnClick: Function) {
+      private fnClick: Function,
+      private minimumCPMToAllow: number,
+      private requestBidsTimeout: number) {
         this.launchPrebid();
+        if (!this.requestBidsTimeout) {
+          this.requestBidsTimeout = 2000;
+        }
     }
 
 
@@ -45,7 +54,7 @@ export class PrebidNegotiator {
           bids: [{
             bidder: 'criteo',
             params: {
-              zoneId: '1444944',
+              zoneId: '1457499',
               video: {
                 skip: 0,
                 playbackmethod: 1,
@@ -73,32 +82,45 @@ export class PrebidNegotiator {
             prebid.addAdUnits(that.adunit);
             prebid.setConfig({
               usePrebidCache: true,
-              //debug: true,
+              debug: true,
               cache: {
                 url: "https://prebid.adnxs.com/pbc/v1/cache"
               }
             });
+            that.callCounterBackend()
             prebid.requestBids({
+              timeout: that.requestBidsTimeout,
               bidsBackHandler: function(bids: any) {
+
                 that.sendAdserverRequest(bids);
               }
             });
           });
     }
+
+    callCounterBackend() {
+      const xml = new XMLHttpRequest();
+      xml.open('GET', 'https://test.vidoomy.com/log/req/?cb=' + this.randomString);
+      xml.send();
+    }
+
     sendAdserverRequest(bids: any){
       const that = this;
       if (prebid.adserverRequestSent) return;
       if (bids && bids['video1'] && bids['video1'].bids && bids['video1'].bids[0] && bids['video1'].bids[0].vastUrl) {
+        
         const xml = new XMLHttpRequest();
         xml.open('POST', 'https://test.vidoomy.com/log/bid/');
         xml.setRequestHeader("Content-Type", "application/json");
         xml.send(JSON.stringify({bids: bids['video1'], key: that.randomKey}));
-
-
-        prebid.adserverRequestSent = true;
-        prebid.que.push(function() {
-          that.invokeVideoPlayer(bids['video1'].bids[0].vastUrl);				
-        });
+        if (bids['video1'].bids[0].cpm >= that.minimumCPMToAllow) {
+          prebid.adserverRequestSent = true;
+          prebid.que.push(function() {
+            that.invokeVideoPlayer(bids['video1'].bids[0].vastUrl);				
+          });
+        } else {
+          that.fnCancel();
+        }
       } else {
         that.fnCancel();
         /*const xml = new XMLHttpRequest();

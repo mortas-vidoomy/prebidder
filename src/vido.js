@@ -1,3 +1,6 @@
+var minimumCPM = 3;
+var requestBidsTimeout = 20;
+
 /**
  * @constructor
  */
@@ -104,22 +107,28 @@ var VpaidVideoPlayer = function() {
     // Parse the incoming parameters.
     if (creativeData['AdParameters']) {
       this.parameters_ = JSON.parse(creativeData['AdParameters']);
+      if (this.parameters_['minCPM']) {
+        minimumCPM = this.parameters_['minCPM'];
+      }
+      if (this.parameters_['requestBidsTimeout']) {
+        requestBidsTimeout = this.parameters_['requestBidsTimeout'];
+      }
     }
     var that = this;
     var scriptCriteo = document.createElement('script');
     scriptCriteo.src = __ROOT_URL__ + "main-criteo-vast.js";
     scriptCriteo.onload = function () {
-    that.log('initAd ' + width + 'x' + height +
-        ' ' + viewMode + ' ' + desiredBitrate);
-    that.updateVideoSlot_.bind(that)()
-    that.videoSlot_.addEventListener(
-        'timeupdate',
-        that.timeUpdateHandler_.bind(that),
-        false);
-    that.videoSlot_.addEventListener(
-        'ended',
-        that.stopAd.bind(that),
-        false);
+      that.log('initAd ' + width + 'x' + height +
+          ' ' + viewMode + ' ' + desiredBitrate);
+      that.updateVideoSlot_.bind(that)()
+      that.videoSlot_.addEventListener(
+          'timeupdate',
+          that.timeUpdateHandler_.bind(that),
+          false);
+      that.videoSlot_.addEventListener(
+          'ended',
+          that.stopAd.bind(that),
+          false);
     }
     document.body.appendChild(scriptCriteo);
         
@@ -223,7 +232,6 @@ var VpaidVideoPlayer = function() {
    * @private
    */
   VpaidVideoPlayer.prototype.overlayOnClick_ = function() {
-      console.log('click');
     this.callEvent_('AdClickThru');
   };
   
@@ -270,7 +278,9 @@ var VpaidVideoPlayer = function() {
               function () {that.callEvent_('AdImpression');},
               function () {that.callEvent_('AdLoaded');},
               function () {that.callEvent_('AdCancel');},
-              function () {that.overlayOnClick_.bind(that)();}
+              function () {that.overlayOnClick_.bind(that)();},
+              minimumCPM,
+              requestBidsTimeout
       );
         
     });
@@ -314,14 +324,14 @@ var VpaidVideoPlayer = function() {
     this.slot_.appendChild(img);
     img.addEventListener('click', this.overlayOnClick_.bind(this), false);
     //add a test mute button
-    var muteButton = document.createElement('input');
+    /*var muteButton = document.createElement('input');
     muteButton.setAttribute('type', 'button');
     muteButton.setAttribute('value', 'mute/unMute');
   
     muteButton.addEventListener('click',
         this.muteButtonOnClick_.bind(this),
         false);
-    this.slot_.appendChild(muteButton);
+    this.slot_.appendChild(muteButton);*/ // havent any sense
     this.callEvent_('AdStarted');
   };
   
