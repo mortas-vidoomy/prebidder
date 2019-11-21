@@ -1,5 +1,5 @@
 var minimumCPM = 3;
-var requestBidsTimeout = 20;
+var requestBidsTimeout = 2000;
 
 /**
  * @constructor
