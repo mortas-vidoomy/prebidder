@@ -36,83 +36,82 @@ export class PrebidNegotiator {
         }
     }
 
-
     launchPrebid() {
-        const that = this;
-        this.adunit = [{
-          code: 'video1',
-          mediaTypes: {
+      const that = this;
+      this.adunit = [{
+        code: 'video1',
+        mediaTypes: {
+          video: {
+            playerSize: [this.width, this.height],
+            context: 'instream',	
+            mimes: ["video/mp4"],
+            maxduration: 30,
+            api: [1, 2],
+            protocols: [2, 3]				
+          }
+        },
+        bids: [{
+          bidder: 'criteo',
+          params: {
+            zoneId: '1457499',
             video: {
-              playerSize: [this.width, this.height],
-              context: 'instream',	
-              mimes: ["video/mp4"],
-              maxduration: 30,
-              api: [1, 2],
-              protocols: [2, 3]				
+              skip: 0,
+              playbackmethod: 1,
+              placement: 1,
             }
-          },
-          bids: [{
-            bidder: 'criteo',
-            params: {
-              zoneId: '1457499',
-              video: {
-                skip: 0,
-                playbackmethod: 1,
-                placement: 1,
-              }
+          }
+        }],
+        consentManagement: {
+          cmpApi: 'static',
+          allowAuctionWithoutConsent: true,
+          consentData: {
+            getConsentData: {
+              'gdprApplies': true,
+              'hasGlobalScope': false,
+              'consentData': this.gdprConsentData
+            },
+            getVendorConsents: {
+              'metadata': this.gdprVendorConsents,
             }
-          }],
-          consentManagement: {
-            cmpApi: 'static',
-            allowAuctionWithoutConsent: true,
-            consentData: {
-              getConsentData: {
-                'gdprApplies': true,
-                'hasGlobalScope': false,
-                'consentData': this.gdprConsentData
-              },
-              getVendorConsents: {
-                'metadata': this.gdprVendorConsents,
-              }
-            }
-          }},
-          ];
+          }
+        }},
+      ];
 
-          prebid.que.push(function() {
-            prebid.addAdUnits(that.adunit);
-            prebid.setConfig({
-              usePrebidCache: true,
-              debug: true,
-              cache: {
-                url: "https://prebid.adnxs.com/pbc/v1/cache"
-              }
-            });
-            that.callCounterBackend()
-            prebid.requestBids({
-              timeout: that.requestBidsTimeout,
-              bidsBackHandler: function(bids: any) {
+      prebid.que.push(function() {
+        prebid.addAdUnits(that.adunit);
+        prebid.setConfig({
+          usePrebidCache: true,
+          debug: true,
+          cache: {
+            url: "https://prebid.adnxs.com/pbc/v1/cache"
+          }
+        });
+        //that.callCounterBackend()
+        prebid.requestBids({
+          timeout: that.requestBidsTimeout,
+          bidsBackHandler: function(bids: any) {
 
-                that.sendAdserverRequest(bids);
-              }
-            });
-          });
+            that.sendAdserverRequest(bids);
+          }
+        });
+      });
     }
 
-    callCounterBackend() {
+    /*callCounterBackend() {
       const xml = new XMLHttpRequest();
       xml.open('GET', 'https://test.vidoomy.com/log/req/?cb=' + this.randomString);
       xml.send();
-    }
+    }*/
 
     sendAdserverRequest(bids: any){
       const that = this;
       if (prebid.adserverRequestSent) return;
       if (bids && bids['video1'] && bids['video1'].bids && bids['video1'].bids[0] && bids['video1'].bids[0].vastUrl) {
         
-        const xml = new XMLHttpRequest();
+        /*const xml = new XMLHttpRequest();
         xml.open('POST', 'https://test.vidoomy.com/log/bid/');
         xml.setRequestHeader("Content-Type", "application/json");
-        xml.send(JSON.stringify({bids: bids['video1'], key: that.randomKey}));
+        xml.send(JSON.stringify({bids: bids['video1'], key: that.randomKey}));*/
         if (bids['video1'].bids[0].cpm >= that.minimumCPMToAllow) {
           prebid.adserverRequestSent = true;
           prebid.que.push(function() {
