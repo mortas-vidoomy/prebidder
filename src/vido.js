@@ -577,4 +577,4 @@ var VpaidVideoPlayer = function() {
   var getVPAIDAd = function() {
     return new VpaidVideoPlayer();
   };
-  
+  window.getVPAIDAd = getVPAIDAd;
