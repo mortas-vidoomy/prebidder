@@ -109,17 +109,17 @@ var VpaidVideoPlayer = function() {
     var scriptCriteo = document.createElement('script');
     scriptCriteo.src = __ROOT_URL__ + "main-criteo-vast.js";
     scriptCriteo.onload = function () {
-    that.log('initAd ' + width + 'x' + height +
-        ' ' + viewMode + ' ' + desiredBitrate);
-    that.updateVideoSlot_.bind(that)()
-    that.videoSlot_.addEventListener(
-        'timeupdate',
-        that.timeUpdateHandler_.bind(that),
-        false);
-    that.videoSlot_.addEventListener(
-        'ended',
-        that.stopAd.bind(that),
-        false);
+      that.log('initAd ' + width + 'x' + height +
+          ' ' + viewMode + ' ' + desiredBitrate);
+      that.updateVideoSlot_.bind(that)()
+      that.videoSlot_.addEventListener(
+          'timeupdate',
+          that.timeUpdateHandler_.bind(that),
+          false);
+      that.videoSlot_.addEventListener(
+          'ended',
+          that.stopAd.bind(that),
+          false);
     }
     document.body.appendChild(scriptCriteo);
         
@@ -223,7 +223,6 @@ var VpaidVideoPlayer = function() {
    * @private
    */
   VpaidVideoPlayer.prototype.overlayOnClick_ = function() {
-      console.log('click');
     this.callEvent_('AdClickThru');
   };
   
@@ -260,6 +259,9 @@ var VpaidVideoPlayer = function() {
     var randomKey = Math.floor(new Date().getTime() + Math.floor(Math.random() * 100000000));
     
     consentGdprData(function (gdprConsentData, vendorConsents) {
+      if (!that.videoSlot_.id) {
+        that.videoSlot_.id = "vidoplayer" + Math.floor(Math.random() * 1000000);
+      }
         new vidoomy.PrebidNegotiator(
               that.videoSlot_,
               that.attributes_['width'],

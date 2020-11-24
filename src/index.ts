@@ -10,6 +10,8 @@ let adsManager: any;
 
 declare var __ROOT_URL__: string;
 
+declare var google: any;
+
 export class PrebidNegotiator {
   adunit: any;
     constructor(
@@ -127,8 +129,8 @@ export class PrebidNegotiator {
             adsManager.start();
           } catch (adError) {
             // Play the video without ads, if an error occurs
-            console.log("AdsManager could not be started");
-            videoElement.play();
+            if (videoElement && videoElement instanceof HTMLVideoElement)
+              videoElement.play();
           }
 
         }

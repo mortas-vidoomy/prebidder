@@ -7,11 +7,11 @@ const { DefinePlugin } = require("webpack");
 const rootClass = "vidoomy-ad-wrapper-" + Math.floor(Math.random() * 1000000);
 const CopyPlugin = require('copy-webpack-plugin');
 
-const url = 'https://vastserverad.com/criteo/';
+const url = 'https://vastserverad.com/33across/';
 
 module.exports = {
   entry: {
-    "main-criteo-vast": ['./src/index.ts'],
+    "main-33across-vast": ['./src/index.ts'],
   },
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -106,10 +106,22 @@ module.exports = {
       filename: "./index.html"
     }),
      new CopyPlugin([
-      { from: path.resolve(__dirname, "src", "vido.js"), to: "", transform: function (content, path) {
-        return content.toString().replace(/__ROOT_URL__/gi, JSON.stringify(url));
+      { 
+        from: path.resolve(__dirname, "src", "vido.js"), 
+        to: "", 
+        transform: function (content, path) {
+          return content.toString().replace(/__ROOT_URL__/gi, JSON.stringify(url));
 
-      } }
+        } 
+      },
+      { 
+        from: path.resolve(__dirname, "src", "tag.xml"), 
+        to: path.resolve(__dirname, "dist", "tag.xml"), 
+        transform: function (content, path) {
+          return content.toString().replace(/__ROOT_URL__/gi, (url));
+
+        } 
+      }
     ]),
     new DefinePlugin({
       __ROOT_URL__: JSON.stringify(url)
