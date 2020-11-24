@@ -1,7 +1,6 @@
 import prebid from 'prebid.js';
 //import 'prebid.js/modules/lkqdBidAdapter'; // imported modules will register themselves automatically with prebid
-import 'prebid.js/modules/criteoBidAdapter';
-import 'prebid.js/modules/dfpAdServerVideo';
+import 'prebid.js/modules/33acrossBidAdapter';
 import 'prebid.js/modules/consentManagement';
 prebid.processQueue();  // required to process existing pbjs.queue blocks and setup any further pbjs.queue execution
 prebid.requestBids({
@@ -31,7 +30,7 @@ export class PrebidNegotiator {
     launchPrebid() {
         const that = this;
         this.adunit = [{
-          code: 'video1',
+          code: this.videoObj.id,
           mediaTypes: {
             video: {
               playerSize: [this.width, this.height],
@@ -39,18 +38,14 @@ export class PrebidNegotiator {
               mimes: ["video/mp4"],
               maxduration: 30,
               api: [1, 2],
-              protocols: [2, 3]				
+              protocols: [2, 3]
             }
           },
           bids: [{
-            bidder: 'criteo',
+            bidder: '33across',
             params: {
-              zoneId: '1444944',
-              video: {
-                skip: 0,
-                playbackmethod: 1,
-                placement: 1,
-              }
+                siteId: 'bQRTd2kMCr65i2aKkGJozW',     
+                productId: 'instream'     
             }
           }],
           consentManagement: {
@@ -73,14 +68,14 @@ export class PrebidNegotiator {
             prebid.addAdUnits(that.adunit);
             prebid.setConfig({
               usePrebidCache: true,
-              //debug: true,
+              debug: true,
               cache: {
                 url: "https://prebid.adnxs.com/pbc/v1/cache"
               }
             });
             prebid.requestBids({
               bidsBackHandler: function(bids: any) {
-                that.sendAdserverRequest(bids);
+                that.sendAdserverRequest.bind(that)(bids);
               }
             });
           });
@@ -88,111 +83,98 @@ export class PrebidNegotiator {
     sendAdserverRequest(bids: any){
       const that = this;
       if (prebid.adserverRequestSent) return;
-      if (bids && bids['video1'] && bids['video1'].bids && bids['video1'].bids[0] && bids['video1'].bids[0].vastUrl) {
-        const xml = new XMLHttpRequest();
-        xml.open('POST', 'https://test.vidoomy.com/log/bid/');
-        xml.setRequestHeader("Content-Type", "application/json");
-        xml.send(JSON.stringify({bids: bids['video1'], key: that.randomKey}));
-
-
+      if (bids && bids[that.videoObj.id] && bids[that.videoObj.id].bids && bids[that.videoObj.id].bids[0] && bids[that.videoObj.id].bids[0].vastUrl) {
         prebid.adserverRequestSent = true;
         prebid.que.push(function() {
-          that.invokeVideoPlayer(bids['video1'].bids[0].vastUrl);				
+          that.invokeVideoPlayer(bids[that.videoObj.id].bids[0].vastUrl);				
         });
       } else {
+        that.invokeVideoPlayer('https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinearvpaid2js&correlator=');
         that.fnCancel();
-        /*const xml = new XMLHttpRequest();
-        prebid.que.push(function() {
-          that.invokeVideoPlayer("https://ads.eu.criteo.com/delivery/r/0.1/vast.php?did=5d95ddc7100283f98330f0e715be7b00&u=%7CIbTI2OtAf3s3jFmTrdVonLSScAIOHy7Nlc%2BdCH9RtgQ%3D%7C&c1=Dcz_gsP0hEtcAD4RA4hUNQ6lz0KWLrnEGOnQ6243XIp2ROSijxgLedDFii6s6O02AlMWZl0khqGZ1rnftcK6WH9sprGChZDWQ6qiD17DClWr4ZRc-TjjzO1G-mgqlMa3rxKfqYfA-6Hnp-Ipwrcy3Ytyip0mu9kjYU4A-vy6h7vYNpVaHbp3wnaw-YNxjGqv9HSwLDFtoMSiFvy76plCZdYirhEZFR1xtQnyCopODHSk4rNKDtrmSHjdrSTlMXIaxCGzVC1yU-KoFTbCTYHCC-FoPBag37FiJE4TlHGiDDPXcFN83mYokHj8ve0Jl81C5fWAWjfYVaoZo3zyYfN75ZwfV73VvhghKmn3eDILjf36oIEckQfjkVLkOr8m_HNVNBnrME4m8_M69-x_EKwvl6ooQost0eLdrs1q1ouFpXEJ02LcjGgAd7VZ4P0bIQVW");
-        });
-        //xml.open('GET', 'https://vadserver.com/node/obtain?xmlUrl=' + encodeURIComponent("https://ads.eu.criteo.com/delivery/r/0.1/vast.php?did=5d94b86026507c9f1fdee0d40e501400&u=%7Cq9F2klJBjzgLBicfg5ioj1B1y8HglvsCIe5Qua8me1E%3D%7C&c1=jWCgqsKSUoXGWHqz_aWNEyGUtd3ffQVP2eqi0j-AdlG3VzEQ-uMqrA41bN_5HcFTvbox4Cem3nnspzvjfXsmz1rvFfty9Q5rVh4m9k03k1-HzhlUxXAw7CaOPMpz-zMJhmXNMcCjbXB3cR_oO3VaMaSdZaP353qB2r0fAv06O8NI3drudnRoKins2x6GhsAe-xXol8HrKoD4t0RD6J4zdCaZnZkppvErjKtqM4o9ccaNPz-BGWxPHcwytSJWl_N15NjTSSvYwX7L2C6Fahs6Pso7V2sg1qH_TFN7ab3mVNUK1s09SACJ5dsnOjZEAAyosTvXG33Vr3obe-3kSjV1AW6pW4GhALa9f8Dit0GRFEnMXLcuulX_sOYE_x_BoA707YOankLiOj68Bad2-FT01zUjahq4heOXM412VBA0keRkbJytTod7c17IW4moZ26uXgP7znZ2PoI"), false);
-        //xml.send();
-        return;*/
       }
     }
 
     invokeVideoPlayer(url:string) {
       const that = this;
       that.fnLoaded();
-     /* const videoJSLink = document.createElement('link');
-      videoJSLink.rel = "stylesheet";
-      videoJSLink.href = "https://cdnjs.cloudflare.com/ajax/libs/video.js/6.4.0/video-js.css";
-      document.body.appendChild(videoJSLink);
+      var videoElement = document.getElementById('vidoomy-video-ad-y-tal') ;
+      var adContainer = document.getElementById('vidoomy-div-ad-y-tal');
 
-      const videoJSVastVPAIDLink = document.createElement('link');
-      videoJSVastVPAIDLink.rel = "stylesheet";
-      videoJSVastVPAIDLink.href = "https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-vpaid/2.0.2/videojs.vast.vpaid.min.css";
-      document.body.appendChild(videoJSVastVPAIDLink);
-*/
 
-      const videoJsScript = document.createElement('script');
-      videoJsScript.src = __ROOT_URL__ + 'main.js';
-      videoJsScript.type = 'text/javascript';
-      videoJsScript.onload = function () {
-        new (window as any).vidoomy.VidoomyPlayer({
-          width: that.width,
-          height: that.height,
-          volume: 0,
-          principalTags: {
-            'lkqd-criteo': url,
-           },
-          xtraTags: [],
-          appearAt: 'left',
-          objVideo: that.videoObj,
-          fnImpression: function () {that.fnImpression();},
-          fnLoaded: that.fnLoaded,
-          fnClick: function () {that.fnClick();},
-          randomKey: that.randomKey
-        }, '', '', 5000);
-          //if ((window as any).videojs) {
-            /*const hasSource = that.videoObj.querySelector('source');
-            if (!hasSource) {
-              const sampleSource = document.createElement('source');
-              sampleSource.type = 'video/mp4';
-              sampleSource.src = 'http://vjs.zencdn.net/v/oceans.mp4';
-              that.videoObj.appendChild(sampleSource);
-            }
+      const imaSdkLoader = document.createElement("script");
+      imaSdkLoader.id = "ima-sdk";
+        imaSdkLoader.src = "//imasdk.googleapis.com/js/sdkloader/ima3_debug.js";
+      imaSdkLoader.onload = function() {
 
-            that.videoObj.style.width = that.width + 'px';
-            that.videoObj.style.height = that.height + 'px';
-*/
-           /* var vid1 = (window as any).videojs(that.videoObj);
+        var adDisplayContainer = new google.ima.AdDisplayContainer(adContainer, videoElement);
+        var adsLoader = new google.ima.AdsLoader(adDisplayContainer);
 
-            /* Access the player instance by calling `videojs()` and passing
-                in the player's ID. Add a `ready` listener to make sure the
-                player is ready before interacting with it. */
-      
-               /* (window as any).videojs(that.videoObj).ready(function() {
-      
-                /* PASS SETTINGS TO VAST PLUGIN
-      
-                    Pass in a JSON object to the player's `vastClient` (defined
-                    by the VAST/VPAID plugin we're using). The requires an
-                    `adTagUrl`, which will be the URL returned by Prebid. You
-                    can view all the options available for the `vastClient`
-                    here:
-      
-                    https://github.com/MailOnline/videojs-vast-vpaid#options */
-      
-               /* var player = this;
-                var vastAd = player.vastClient({
-                    adTagUrl: url,
-                    playAdAlways: true,
-                    verbosity: 4,
-                    autoplay: true
-                });
-      
-                player.muted(true);
-                player.play();*/
-      
-            //});
-        //}
+        adsLoader
+        .getSettings()
+        .setVpaidMode(google.ima.ImaSdkSettings.VpaidMode.INSECURE);
+        function onAdsManagerLoaded(adsManagerLoadedEvent: any) {
+          // Instantiate the AdsManager from the adsLoader response and pass it the video element
+          adsManager = adsManagerLoadedEvent.getAdsManager(videoElement);
+          adsManager.setVolume(0);
 
-       // document.body.appendChild(videoJsVASTVPAIDScript);
-      }
+          //videoElement.load();
+          adDisplayContainer.initialize();
 
-      document.body.appendChild(videoJsScript);
-      
+          var width = 640;
+          var height = 360;
+          try {
+            adsManager.init(width, height, google.ima.ViewMode.NORMAL);
+            adsManager.start();
+          } catch (adError) {
+            // Play the video without ads, if an error occurs
+            console.log("AdsManager could not be started");
+            videoElement.play();
+          }
+
+        }
+
+        function onAdError(adErrorEvent: any) {
+          // Handle the error logging.
+          console.log(adErrorEvent.getError());
+          if(adsManager) {
+            adsManager.destroy();
+          }
+        }
+        adsLoader.addEventListener(
+          google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+          onAdsManagerLoaded,
+          false);
+        adsLoader.addEventListener(
+            google.ima.AdErrorEvent.Type.AD_ERROR,
+            onAdError,
+            false);
+    
+        if (videoElement) {
+
+          // Let the AdsLoader know when the video has ended
+          videoElement.addEventListener('ended', function() {
+            adsLoader.contentComplete();
+          });
+
+          var adsRequest = new google.ima.AdsRequest();
+          adsRequest.adTagUrl = url;
+
+          // Specify the linear and nonlinear slot sizes. This helps the SDK to
+          // select the correct creative if multiple are returned.
+          adsRequest.linearAdSlotWidth = videoElement.clientWidth;
+          adsRequest.linearAdSlotHeight = videoElement.clientHeight;
+          adsRequest.nonLinearAdSlotWidth = videoElement.clientWidth;
+          adsRequest.nonLinearAdSlotHeight = videoElement.clientHeight / 3;
+
+          adsRequest.setAdWillAutoPlay(true);
+          adsRequest.setAdWillPlayMuted(true);
+          // Pass the request to the adsLoader to request ads
+          adsLoader.requestAds(adsRequest);
+        }
+
+      }.bind(this);
+      document.head.appendChild(imaSdkLoader);
 
     }
+    
 }

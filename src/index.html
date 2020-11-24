@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Patatas</title>
+        <title>Prebid.js 33across</title>
         <!-- use recent version of videojs to ensure proper functioning with the iOS devices --
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/video.js/6.4.0/video-js.css">
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/video.js/6.4.0/video.js"></script>
@@ -9,6 +9,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-vpaid/2.0.2/videojs_5.vast.vpaid.min.js"></script>-->
         <script>
             function init() {
+                debugger;
                 new vidoomy.PrebidNegotiator(
                     document.getElementById("vidoomy-video-ad-y-tal"),
                     400,
@@ -16,9 +17,9 @@
                     undefined,
                     undefined,
                     '123123123',
-                    function () {alert('AdImpression');},
-                    function () {alert('AdLoaded');},
-                    function () {alert('AdCancel')}
+                    function () {console.log('AdImpression');},
+                    function () {console.log('AdLoaded');},
+                    function () {console.log('AdCancel')}
                 );
                 //new vidoomy.PrebidNegotiator(document.getElementById("vidoomy-video-ad-y-tal"), document.getElementById("vidoomy-div-ad-y-tal"));
             }

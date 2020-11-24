@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "webpack-dev-server",
-    "dev": "webpack --mode production --config webpack.config.dev.js",
+    "dev": "webpack --mode development --config webpack.config.dev.js",
     "build": "webpack --mode production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -47,6 +47,6 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "prebid.js": "^2.34.0"
+    "prebid.js": "^4.17.0"
   }
 }
